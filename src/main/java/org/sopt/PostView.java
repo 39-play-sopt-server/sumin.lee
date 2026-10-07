@@ -14,7 +14,8 @@ public class PostView {
         System.out.println("4. 게시글 수정");
         System.out.println("5. 게시글 삭제");
         System.out.println("6. 종료");
-        return readNumber("선택: ");
+
+        return Integer.parseInt(readText("선택: "));
     }
 
     public String readTitle() {
@@ -33,8 +34,24 @@ public class PostView {
         return readText("새로운 내용: ");
     }
 
-    public int readPostNumber(String action) {
-        return readNumber(action + "할 게시글 번호: ");
+    public long readPostId(String action) {
+        return Long.parseLong(readText(action + "할 게시글 ID: "));
+    }
+
+    public Category readCategory() {
+        System.out.println("1. 일반 / 2. 질문 / 3. 정보");
+        int number = Integer.parseInt(readText("카테고리 선택: "));
+
+        switch (number) {
+            case 1:
+                return Category.GENERAL;
+            case 2:
+                return Category.QUESTION;
+            case 3:
+                return Category.INFORMATION;
+            default:
+                throw new IllegalArgumentException("잘못된 카테고리입니다.");
+        }
     }
 
     public void showPosts(List<Post> posts) {
@@ -45,17 +62,21 @@ public class PostView {
             return;
         }
 
-        for (int i = 0; i < posts.size(); i++) {
+        for (Post post : posts) {
             System.out.println(
-                    (i + 1) + ". " + posts.get(i).getTitle()
+                    post.getId() + ". [" + post.getCategory() + "] "
+                            + post.getTitle()
             );
         }
     }
 
     public void showPost(Post post) {
         System.out.println("\n=== 게시글 ===");
+        System.out.println("ID: " + post.getId());
         System.out.println("제목: " + post.getTitle());
         System.out.println("내용: " + post.getContent());
+        System.out.println("카테고리: " + post.getCategory());
+        System.out.println("작성 시간: " + post.getCreatedAt());
     }
 
     public void showMessage(String message) {
@@ -65,9 +86,5 @@ public class PostView {
     private String readText(String message) {
         System.out.print(message);
         return scanner.nextLine();
-    }
-
-    private int readNumber(String message) {
-        return Integer.parseInt(readText(message));
     }
 }
