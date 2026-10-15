@@ -7,11 +7,14 @@ plugins {
 group = 'org.sopt'
 version = '1.0-SNAPSHOT'
 
+ext['logback.version'] = '1.6.5'
+
 repositories {
     mavenCentral()
 }
 
 dependencies {
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3'
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
     testImplementation platform('org.junit:junit-bom:6.0.0')

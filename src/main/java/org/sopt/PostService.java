@@ -24,7 +24,9 @@ public class PostService {
     }
 
     public Post getPost(long id) {
-        return repository.findById(id);
+        Post post = repository.findById(id);
+        post.increaseViewCount();
+        return post;
     }
 
     public void updatePost(
