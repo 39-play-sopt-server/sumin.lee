@@ -1,84 +1,82 @@
 package org.sopt;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/v1/posts")
 public class PostController {
-    private final PostView view;
     private final PostService service;
 
-    public PostController(PostView view, PostService service) {
-        this.view = view;
+    public PostController(PostService service) {
         this.service = service;
     }
 
-    public void run() {
-        while (true) {
-            try {
-                int command = view.readCommand();
+    @PostMapping
+    public ResponseEntity<ApiResponse<Void>> createPost(
+            @RequestBody PostRequest request
+    ) {
+        service.createPost(
+                request.title(),
+                request.content(),
+                request.category()
+        );
 
-                switch (command) {
-                    case 1:
-                        createPost();
-                        break;
-                    case 2:
-                        view.showPosts(service.getPosts());
-                        break;
-                    case 3:
-                        readPost();
-                        break;
-                    case 4:
-                        updatePost();
-                        break;
-                    case 5:
-                        deletePost();
-                        break;
-                    case 6:
-                        view.showMessage("프로그램을 종료합니다.");
-                        return;
-                    default:
-                        view.showMessage("잘못된 메뉴 번호입니다.");
-                }
-            } catch (NumberFormatException e) {
-                view.showMessage("숫자를 입력해주세요.");
-            } catch (PostNotFoundException e) {
-                view.showMessage(e.getMessage());
-            } catch (IllegalArgumentException e) {
-                view.showMessage(e.getMessage());
-            }
-        }
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.<Void>success(
+                        "게시글이 작성되었습니다.",
+                        null
+                ));
     }
 
-    private void createPost() {
-        String title = view.readTitle();
-        String content = view.readContent();
-        Category category = view.readCategory();
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<Post>>> readPosts() {
+        List<Post> posts = service.getPosts();
 
-        service.createPost(title, content, category);
-        view.showMessage("게시글이 작성되었습니다.");
+        return ResponseEntity.ok(
+                ApiResponse.success("게시글 목록 조회에 성공했습니다.", posts)
+        );
     }
 
-    private void readPost() {
-        long id = view.readPostId("조회");
+    @GetMapping("/{postId}")
+    public ResponseEntity<ApiResponse<Post>> readPost(
+            @PathVariable("postId") long postId
+    ) {
+        Post post = service.getPost(postId);
 
-        Post post = service.getPost(id);
-        view.showPost(post);
+        return ResponseEntity.ok(
+                ApiResponse.success("게시글 조회에 성공했습니다.", post)
+        );
     }
 
-    private void updatePost() {
-        long id = view.readPostId("수정");
+    @PutMapping("/{postId}")
+    public ResponseEntity<ApiResponse<Void>> updatePost(
+            @PathVariable("postId") long postId,
+            @RequestBody PostRequest request
+    ) {
+        service.updatePost(
+                postId,
+                request.title(),
+                request.content(),
+                request.category()
+        );
 
-        service.getPost(id);
-
-        String title = view.readNewTitle();
-        String content = view.readNewContent();
-        Category category = view.readCategory();
-
-        service.updatePost(id, title, content, category);
-        view.showMessage("게시글이 수정되었습니다.");
+        return ResponseEntity.ok(
+                ApiResponse.<Void>success("게시글이 수정되었습니다.", null)
+        );
     }
 
-    private void deletePost() {
-        long id = view.readPostId("삭제");
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<ApiResponse<Void>> deletePost(
+            @PathVariable("postId") long postId
+    ) {
+        service.deletePost(postId);
 
-        service.deletePost(id);
-        view.showMessage("게시글이 삭제되었습니다.");
+        return ResponseEntity.ok(
+                ApiResponse.<Void>success("게시글이 삭제되었습니다.", null)
+        );
     }
 }

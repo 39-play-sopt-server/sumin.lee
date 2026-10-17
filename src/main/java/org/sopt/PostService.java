@@ -1,7 +1,10 @@
 package org.sopt;
 
+import org.springframework.stereotype.Service;
+
 import java.util.List;
 
+@Service
 public class PostService {
     private final PostRepository repository;
     private long nextId = 1L;
@@ -21,7 +24,9 @@ public class PostService {
     }
 
     public Post getPost(long id) {
-        return repository.findById(id);
+        Post post = repository.findById(id);
+        post.increaseViewCount();
+        return post;
     }
 
     public void updatePost(

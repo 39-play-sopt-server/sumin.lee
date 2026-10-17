@@ -8,6 +8,7 @@ public class Post {
     private String content;
     private Category category;
     private final LocalDateTime createdAt;
+    private long viewCount;
 
     public Post(long id, String title, String content, Category category) {
         validate(title, content, category);
@@ -17,6 +18,7 @@ public class Post {
         this.content = content;
         this.category = category;
         this.createdAt = LocalDateTime.now();
+        this.viewCount = 0;
     }
 
     private void validate(String title, String content, Category category) {
@@ -41,6 +43,10 @@ public class Post {
         this.category = category;
     }
 
+    public void increaseViewCount() {
+        this.viewCount++;
+    }
+
     public long getId() {
         return id;
     }
@@ -59,5 +65,9 @@ public class Post {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public long getViewCount() {
+        return viewCount;
     }
 }
