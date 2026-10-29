@@ -1,34 +1,19 @@
 package org.sopt;
 
-import org.springframework.stereotype.Repository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
 
-@Repository
-public class PostRepository {
-    private final List<Post> posts = new ArrayList<>();
+public interface PostRepository extends JpaRepository<Post, Long> {
 
-    public void save(Post post) {
-        posts.add(post);
-    }
+    @Override
+    @EntityGraph(attributePaths = "member")
+    Page<Post> findAll(Pageable pageable);
 
-    public List<Post> findAll() {
-        return new ArrayList<>(posts);
-    }
-
-    public Post findById(long id) {
-        for (Post post : posts) {
-            if (post.getId() == id) {
-                return post;
-            }
-        }
-
-        throw new PostNotFoundException(id);
-    }
-
-    public void deleteById(long id) {
-        Post post = findById(id);
-        posts.remove(post);
-    }
+    @Override
+    @EntityGraph(attributePaths = "member")
+    Optional<Post> findById(Long id);
 }
