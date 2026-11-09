@@ -1,46 +1,80 @@
 package org.sopt;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-
-import java.time.LocalDateTime;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
-public class Post {
+public class Post extends BaseEntity {
+
+    private static final int MAX_TITLE_LENGTH = 255;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
+
+    @Column(nullable = false, length = MAX_TITLE_LENGTH)
     private String title;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Category category;
 
-    private LocalDateTime createdAt;
-    private long viewCount;
+    @Column(nullable = false)
+    private long viewCount = 0;
 
     protected Post() {
     }
 
-    public Post(String title, String content, Category category) {
+    public Post(
+            Member member,
+            String title,
+            String content,
+            Category category
+    ) {
         validate(title, content, category);
 
+        if (member == null) {
+            throw new IllegalArgumentException("작성자가 필요합니다.");
+        }
+
+        if (member.isDeleted()) {
+            throw new IllegalArgumentException(
+                    "탈퇴한 회원은 게시글을 작성할 수 없습니다."
+            );
+        }
+
+        this.member = member;
         this.title = title;
         this.content = content;
         this.category = category;
-        this.createdAt = LocalDateTime.now();
-        this.viewCount = 0;
     }
 
-    private void validate(String title, String content, Category category) {
+    private void validate(
+            String title,
+            String content,
+            Category category
+    ) {
         if (title == null || title.isBlank()) {
             throw new IllegalArgumentException("제목은 비어 있을 수 없습니다.");
+        }
+
+        if (title.length() > MAX_TITLE_LENGTH) {
+            throw new IllegalArgumentException("제목은 255자 이하여야 합니다.");
         }
 
         if (content == null || content.isBlank()) {
@@ -68,6 +102,10 @@ public class Post {
         return id;
     }
 
+    public Member getMember() {
+        return member;
+    }
+
     public String getTitle() {
         return title;
     }
@@ -78,10 +116,6 @@ public class Post {
 
     public Category getCategory() {
         return category;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
     }
 
     public long getViewCount() {

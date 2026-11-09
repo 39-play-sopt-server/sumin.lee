@@ -2,24 +2,32 @@ package org.sopt;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/posts")
 public class PostController {
-    private final PostService service;
 
-    public PostController(PostService service) {
-        this.service = service;
+    private final PostService postService;
+
+    public PostController(PostService postService) {
+        this.postService = postService;
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<Void>> createPost(
-            @RequestBody PostRequest request
+            @RequestBody PostCreateRequest request
     ) {
-        service.createPost(
+        postService.createPost(
+                request.memberId(),
                 request.title(),
                 request.content(),
                 request.category()
@@ -33,22 +41,31 @@ public class PostController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<Post>>> readPosts() {
-        List<Post> posts = service.getPosts();
+    public ResponseEntity<ApiResponse<PostPageResponse>> readPosts(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size
+    ) {
+        PostPageResponse response = postService.getPosts(page, size);
 
         return ResponseEntity.ok(
-                ApiResponse.success("게시글 목록 조회에 성공했습니다.", posts)
+                ApiResponse.success(
+                        "게시글 목록 조회에 성공했습니다.",
+                        response
+                )
         );
     }
 
     @GetMapping("/{postId}")
-    public ResponseEntity<ApiResponse<Post>> readPost(
+    public ResponseEntity<ApiResponse<PostResponse>> readPost(
             @PathVariable("postId") long postId
     ) {
-        Post post = service.getPost(postId);
+        PostResponse response = postService.getPost(postId);
 
         return ResponseEntity.ok(
-                ApiResponse.success("게시글 조회에 성공했습니다.", post)
+                ApiResponse.success(
+                        "게시글 조회에 성공했습니다.",
+                        response
+                )
         );
     }
 
@@ -57,7 +74,7 @@ public class PostController {
             @PathVariable("postId") long postId,
             @RequestBody PostRequest request
     ) {
-        service.updatePost(
+        postService.updatePost(
                 postId,
                 request.title(),
                 request.content(),
@@ -65,7 +82,10 @@ public class PostController {
         );
 
         return ResponseEntity.ok(
-                ApiResponse.<Void>success("게시글이 수정되었습니다.", null)
+                ApiResponse.<Void>success(
+                        "게시글이 수정되었습니다.",
+                        null
+                )
         );
     }
 
@@ -73,10 +93,13 @@ public class PostController {
     public ResponseEntity<ApiResponse<Void>> deletePost(
             @PathVariable("postId") long postId
     ) {
-        service.deletePost(postId);
+        postService.deletePost(postId);
 
         return ResponseEntity.ok(
-                ApiResponse.<Void>success("게시글이 삭제되었습니다.", null)
+                ApiResponse.<Void>success(
+                        "게시글이 삭제되었습니다.",
+                        null
+                )
         );
     }
 }
