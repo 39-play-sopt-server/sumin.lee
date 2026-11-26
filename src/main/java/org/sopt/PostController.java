@@ -1,7 +1,9 @@
 package org.sopt;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,11 +25,13 @@ public class PostController {
     }
 
     @PostMapping
+    @SecurityRequirement(name = SecurityConfig.BEARER_SCHEME)
     public ResponseEntity<ApiResponse<Void>> createPost(
-            @RequestBody PostCreateRequest request
+            @AuthenticationPrincipal Long memberId,
+            @RequestBody PostRequest request
     ) {
         postService.createPost(
-                request.memberId(),
+                memberId,
                 request.title(),
                 request.content(),
                 request.category()
@@ -70,12 +74,15 @@ public class PostController {
     }
 
     @PutMapping("/{postId}")
+    @SecurityRequirement(name = SecurityConfig.BEARER_SCHEME)
     public ResponseEntity<ApiResponse<Void>> updatePost(
             @PathVariable("postId") long postId,
+            @AuthenticationPrincipal Long memberId,
             @RequestBody PostRequest request
     ) {
         postService.updatePost(
                 postId,
+                memberId,
                 request.title(),
                 request.content(),
                 request.category()
@@ -90,10 +97,12 @@ public class PostController {
     }
 
     @DeleteMapping("/{postId}")
+    @SecurityRequirement(name = SecurityConfig.BEARER_SCHEME)
     public ResponseEntity<ApiResponse<Void>> deletePost(
-            @PathVariable("postId") long postId
+            @PathVariable("postId") long postId,
+            @AuthenticationPrincipal Long memberId
     ) {
-        postService.deletePost(postId);
+        postService.deletePost(postId, memberId);
 
         return ResponseEntity.ok(
                 ApiResponse.<Void>success(

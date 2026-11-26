@@ -8,26 +8,21 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final RefreshSessionRepository sessions;
 
-    public MemberService(MemberRepository memberRepository) {
+    public MemberService(MemberRepository memberRepository, RefreshSessionRepository sessions) {
         this.memberRepository = memberRepository;
-    }
-
-    @Transactional
-    public Long createMember(String name) {
-        Member member = new Member(name);
-        Member savedMember = memberRepository.save(member);
-
-        return savedMember.getId();
+        this.sessions = sessions;
     }
 
     @Transactional
     public void withdrawMember(long memberId) {
-        Member member = memberRepository.findById(memberId)
+        Member member = memberRepository.findActiveForUpdate(memberId)
                 .orElseThrow(
                         () -> new MemberNotFoundException(memberId)
                 );
 
         member.withdraw();
+        sessions.deleteForMember(memberId);
     }
 }
