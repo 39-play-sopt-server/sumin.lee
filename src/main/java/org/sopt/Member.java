@@ -19,6 +19,13 @@ public class Member extends BaseEntity {
     @Column(nullable = false, length = MAX_NAME_LENGTH)
     private String name;
 
+    // 기존 회원은 로그인 자격 증명 없이 게시글 작성자 정보로 유지된다.
+    @Column(unique = true, length = 50)
+    private String username;
+
+    @Column(length = 60)
+    private String passwordHash;
+
     @Column(nullable = false)
     private boolean deleted = false;
 
@@ -41,8 +48,16 @@ public class Member extends BaseEntity {
         this.name = trimmedName;
     }
 
+    public Member(String name, String username, String passwordHash) {
+        this(name);
+        this.username = username;
+        this.passwordHash = passwordHash;
+    }
+
     public void withdraw() {
         this.name = WITHDRAWN_NAME;
+        this.username = null;
+        this.passwordHash = null;
         this.deleted = true;
     }
 
@@ -52,6 +67,10 @@ public class Member extends BaseEntity {
 
     public String getName() {
         return name;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
     }
 
     public boolean isDeleted() {

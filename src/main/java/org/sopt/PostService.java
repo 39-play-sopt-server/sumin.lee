@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -81,18 +82,27 @@ public class PostService {
     @Transactional
     public void updatePost(
             long id,
+            long memberId,
             String title,
             String content,
             Category category
     ) {
-        Post post = findPost(id);
+        Post post = findOwnedPost(id, memberId);
         post.update(title, content, category);
     }
 
     @Transactional
-    public void deletePost(long id) {
-        Post post = findPost(id);
+    public void deletePost(long id, long memberId) {
+        Post post = findOwnedPost(id, memberId);
         postRepository.delete(post);
+    }
+
+    private Post findOwnedPost(long id, long memberId) {
+        Post post = findPost(id);
+        if (post.getMember().getId() != memberId) {
+            throw new AccessDeniedException("게시글 작성자만 수정하거나 삭제할 수 있습니다.");
+        }
+        return post;
     }
 
     private Post findPost(long id) {

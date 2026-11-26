@@ -16,3 +16,8 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
+
+app:
+  auth:
+    jwt-secret: ${JWT_SECRET}
+    allowed-origin: ${AUTH_ALLOWED_ORIGIN:http://localhost:5173}
